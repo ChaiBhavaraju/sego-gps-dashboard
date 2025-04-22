@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test GPS Tracker</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #map { height: 100%; width: 100%; }
+  </style>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD5o-vUyxJdaRhXLSCZvEjDPhIzbGhcQbY"></script>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    const AIO_KEY = "aio_ZVXs36ANoFslxt9EDRylLO5zsLCr";
+    const FEED_URL = "https://io.adafruit.com/api/v2/dashboardsego/feeds/gps-location/data/last";
+
+    let map;
+    let marker;
+
+    async function fetchAndDisplayGPS() {
+      try {
+        const response = await fetch(FEED_URL, {
+          headers: {
+            "X-AIO-Key": AIO_KEY
+          }
+        });
+
+        const data = await response.json();
+        const [lat, lon] = data.value.split(',').map(parseFloat);
+        const position = { lat, lng: lon };
+
+        if (!map) {
+          map = new google.maps.Map(document.getElementById("map"), {
+            center: position,
+            zoom: 16
+          });
+          marker = new google.maps.Marker({
+            position,
+            map,
+            title: "Live Location"
+          });
+        } else {
+          marker.setPosition(position);
+          map.panTo(position);
+        }
+      } catch (error) {
+        console.error("Failed to load GPS data:", error);
+      }
+    }
+
+    fetchAndDisplayGPS();
+    setInterval(fetchAndDisplayGPS, 10000); // refresh every 10 sec
+  </script>
+</body>
+</html>
